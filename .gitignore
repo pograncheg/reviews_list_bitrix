@@ -1,0 +1,5 @@
+/*
+!/htdocs
+/htdocs/*
+!/htdocs/local/
+!.gitignore

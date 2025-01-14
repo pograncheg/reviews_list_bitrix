@@ -1,0 +1,9 @@
+.new-review-button-container {
+    margin: 18px 0;
+    position: relative;
+}
+
+#new-review-button {
+    position: absolute;
+    right: 0;
+}
