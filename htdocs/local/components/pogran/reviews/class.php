@@ -2,22 +2,13 @@
 
 namespace Pogran\MyComponents;
 
+use Bitrix\Main\Application;
 use Bitrix\Main\Error;
 use Bitrix\Main\Errorable;
 use Bitrix\Main\ErrorCollection;
 use Bitrix\Main\Engine\ActionFilter;
 use Bitrix\Main\Engine\Contract\Controllerable;
 use CBitrixComponent;
-use \Bitrix\Main\Context;
-use Bitrix\Sale\Order;
-use Bitrix\Sale\Basket;
-use Bitrix\Sale\Fuser;
-use Bitrix\Main\Loader;
-use Filters\ValidatePhoneFilter;
-use Bitrix\Main\Engine\CurrentUser;
-use \Bitrix\Iblock\Iblock;
-use Bitrix\Highloadblock\HighloadBlockTable;
-use Bitrix\Iblock\PropertyTable;
 
 use Pogran\ReviewTable;
 use Bitrix\Main\Grid\Options as GridOptions;
@@ -90,9 +81,9 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
 
         $filterOption = new \Bitrix\Main\UI\Filter\Options($this->arParams['LIST_ID']);
         $filterData = $filterOption->getFilter([]);
-        echo '<pre>';
-        print_r($filterData);
-        echo '</pre>';
+        // echo '<pre>';
+        // print_r($filterData);
+        // echo '</pre>';
 
         $filter = [];
         foreach ($filterData as $k => $v) {
@@ -174,14 +165,14 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
         $data = [
             'TEXT' => htmlspecialcharsEx(trim($reviewText)),
             'ENTITY_TYPE' => $reviewEntityType,
-            'VALID' => $reviewValid,
+            'VALID' => $reviewValid == true ? 'Y' : 'N',
             'UPDATED_AT' => new \Bitrix\Main\Type\DateTime(),
             'ENTITY' => htmlspecialcharsEx(trim($reviewEntity))
         ];
 
         $result = ReviewTable::update($reviewId, $data);
         
-        return $result;
+        return $data;
     }
 
     public function deleteReviewAction($reviewId) {
@@ -194,7 +185,7 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
             'TEXT' => htmlspecialcharsEx(trim($reviewText)),
             'RATING' => htmlspecialcharsEx(trim($reviewRating)),
             'ENTITY_TYPE' => $reviewEntityType,
-            'VALID' => $reviewValid,
+            'VALID' => $reviewValid == true ? 'Y' : 'N',
             'CREATED_AT' => new \Bitrix\Main\Type\DateTime(),
             'ENTITY' => htmlspecialcharsEx(trim($reviewEntity))
         ];

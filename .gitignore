@@ -3,3 +3,6 @@
 /htdocs/*
 !/htdocs/local/
 !.gitignore
+/htdocs/local/components/pogran/reviewsRep/*
+/htdocs/local/components/pogran/sidepanelForm/*
+/htdocs/local/reviewsRep.php

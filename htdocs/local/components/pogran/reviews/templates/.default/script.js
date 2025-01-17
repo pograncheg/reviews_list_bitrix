@@ -122,6 +122,11 @@ function openCreateForm() {
   BX.SidePanel.Instance.open("pogran:reviews", {
     width: 370,
     title: "Создать отзыв",
+    events: {
+      onClose: function () {
+        this.destroy();
+      },
+    },
     contentCallback: function (slider) {
       return BX.Runtime.loadExtension("ui.sidepanel.layout").then(() => {
         return BX.UI.SidePanel.Layout.createContent({
@@ -154,7 +159,6 @@ function openCreateForm() {
                         reviewEntityType: reviewEntityType,
                         reviewValid: reviewValid,
                         reviewEntity: reviewEntity,
-                        // 'parentComponent': parentComponent,
                       },
                     })
                     .then(function (response) {
@@ -169,19 +173,6 @@ function openCreateForm() {
                       } else {
                       }
                     });
-                  // console.log(grid);
-
-                  // alert('saved!');
-                  // console.log(id);
-                  //   BX.SidePanel.Instance.destroy(slider)
-                  // BX.SidePanel.Instance.close();
-                  // BX.SidePanel.Slider.destroy();
-                  //   BX.SidePanel.Instance.destroy(slider);
-                  // console.log(gridId);
-                  // console.log(grid);
-                  // if (grid) {
-                  //   grid.reloadTable();
-                  // }
                 },
               }),
               cancelButton,

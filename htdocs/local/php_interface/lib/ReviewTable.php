@@ -5,9 +5,9 @@ class ReviewTable extends Entity\DataManager
 {
 	public static function getTableName()
 	{
-		return 'mnd_reviews';
+		return 'mnd_reviews_new';
 	}
-	
+		
 	public static function getMap()
 	{
 		return array(
@@ -22,13 +22,17 @@ class ReviewTable extends Entity\DataManager
 			new Entity\IntegerField('RATING'),
 			new Entity\StringField('TEXT', [
                 'required' => true,
-            ]
-		),
-			new Entity\BooleanField('VALID', [
+            ]),
+			new Entity\EnumField('VALID', [
+				'values' => ['N', 'Y'],
                 'default_value' => 'N',
             ]),
-			new Entity\StringField('ENTITY_TYPE'),
-			new Entity\IntegerField('ENTITY'),
+			new Entity\StringField('ENTITY_TYPE', [
+                'required' => true,
+            ]),
+			new Entity\IntegerField('ENTITY', [
+                'required' => true,
+            ]),
 		);
 	}
 }
