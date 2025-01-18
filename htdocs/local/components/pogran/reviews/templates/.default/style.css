@@ -7,3 +7,7 @@
     position: absolute;
     right: 0;
 }
+
+.error-field {
+    color: rgb(185, 36, 36);
+}

@@ -9,10 +9,12 @@ use Bitrix\Main\ErrorCollection;
 use Bitrix\Main\Engine\ActionFilter;
 use Bitrix\Main\Engine\Contract\Controllerable;
 use CBitrixComponent;
+use \Bitrix\Main\Context;
 
 use Pogran\ReviewTable;
 use Bitrix\Main\Grid\Options as GridOptions;
 use Bitrix\Main\UI\PageNavigation;
+use Pogran\Filters\ValidateFormFilter;
 
 class ReviewsComponent extends CBitrixComponent implements Controllerable, Errorable
 {
@@ -62,13 +64,21 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
     public function configureActions()
     {
         return [
-
+            'createReview' => [
+                'prefilters' => [
+                    new ValidateFormFilter(),
+                ],
+            ],
+            'editReview' => [
+                'prefilters' => [
+                    new ValidateFormFilter(),
+                ],
+            ],
         ];
     }
 
     protected function getReviews()
     {
-        // $list_id = 'reviews_list';
 
         $grid_options = new GridOptions($this->arParams['LIST_ID']);
         $sort = $grid_options->GetSorting(['sort' => ['ID' => 'DESC'], 'vars' => ['by' => 'by', 'order' => 'order']]);
@@ -93,25 +103,25 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
                 case 'ENTITY_TYPE':
                     $filter[$k] = $v;
                     break;
-                // case 'VALID':
-                //     $filter[$k] = $v;
-                //     break;
-                // case 'RATING':
-                //     $filter[$k] = $v;
-                //     break;
-                // case 'CREATED_AT':
-                //     $filter[$k] = $v;
-                //     break;
-                // case 'CREATED_AT_from':
-                //     echo 
-                //     $filter[">=CREATED_AT"] = $v;
-                //     break;
-                // case 'CREATED_AT_to':
-                //     $filter["<=CREATED_AT"] = $v;
-                //     break;
-                // case 'CREATED_AT_to':
-                //     $filter["<{$k}"] = $v;
-                //     break;  
+                    // case 'VALID':
+                    //     $filter[$k] = $v;
+                    //     break;
+                    // case 'RATING':
+                    //     $filter[$k] = $v;
+                    //     break;
+                    // case 'CREATED_AT':
+                    //     $filter[$k] = $v;
+                    //     break;
+                    // case 'CREATED_AT_from':
+                    //     echo 
+                    //     $filter[">=CREATED_AT"] = $v;
+                    //     break;
+                    // case 'CREATED_AT_to':
+                    //     $filter["<=CREATED_AT"] = $v;
+                    //     break;
+                    // case 'CREATED_AT_to':
+                    //     $filter["<{$k}"] = $v;
+                    //     break;  
                 case 'RATING_from':
                     $filter[">=RATING"] = $v;
                     // echo ">RATING";
@@ -119,11 +129,9 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
                 case 'RATING_to':
                     $filter["<=RATING"] = $v;
                     // echo ">RATING";
-                    break;   
-                    
-                
+                    break;
             }
-            echo $k . ' - ' . $v . '<br>';
+            // echo $k . ' - ' . $v . '<br>';
             $filter['TEXT'] = "%" . $filterData['FIND'] . "%";
         }
 
@@ -145,7 +153,7 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
                     [
                         'text'    => 'Редактировать',
                         'default' => true,
-                        'onclick' => "openEditForm({$row['ID']}, '{$row['TEXT']}', '{$row['ENTITY_TYPE']}', '{$row['VALID']}' , '{$row['ENTITY']}')",
+                        'onclick' => "openEditForm({$row['ID']}, {$row['RATING']}, '{$row['TEXT']}', '{$row['ENTITY_TYPE']}', '{$row['VALID']}' , '{$row['ENTITY']}')",
                     ],
                     [
                         'text'    => 'Удалить',
@@ -160,37 +168,59 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
         $this->arResult['NAV_OBJ'] = $nav;
     }
 
-    public function editReviewAction($reviewId, $reviewText, $reviewEntityType, $reviewValid, $reviewEntity) {
+    public function editReviewAction()
+    {
+
+        $request = Context::getCurrent()->getRequest();
+        $reviewId = htmlspecialcharsEx(trim($request->get('ID')));
+        $reviewText = htmlspecialcharsEx(trim($request->get('TEXT')));
+        $reviewRating = htmlspecialcharsEx(trim($request->get('RATING')));
+        $reviewEntityType = htmlspecialcharsEx(trim($request->get('ENTITY_TYPE')));
+        $reviewEntity = htmlspecialcharsEx(trim($request->get('ENTITY')));
+        $reviewValid = htmlspecialcharsEx(trim($request->get('VALID')));
 
         $data = [
             'TEXT' => htmlspecialcharsEx(trim($reviewText)),
+            'RATING' => htmlspecialcharsEx(trim($reviewRating)),
             'ENTITY_TYPE' => $reviewEntityType,
-            'VALID' => $reviewValid == true ? 'Y' : 'N',
+            'VALID' => $reviewValid === 'on' ? 'Y' : 'N',
             'UPDATED_AT' => new \Bitrix\Main\Type\DateTime(),
             'ENTITY' => htmlspecialcharsEx(trim($reviewEntity))
         ];
 
         $result = ReviewTable::update($reviewId, $data);
-        
+
         return $data;
     }
 
-    public function deleteReviewAction($reviewId) {
+    public function deleteReviewAction($reviewId)
+    {
         $result = ReviewTable::delete($reviewId);
         return $reviewId;
     }
 
-    public function createReviewAction($reviewText, $reviewRating, $reviewEntityType, $reviewValid, $reviewEntity) {
+    public function createReviewAction()
+    {
+
+        $request = Context::getCurrent()->getRequest();
+        $reviewText = htmlspecialcharsEx(trim($request->get('TEXT')));
+        $reviewRating = htmlspecialcharsEx(trim($request->get('RATING')));
+        $reviewEntityType = htmlspecialcharsEx(trim($request->get('ENTITY_TYPE')));
+        $reviewEntity = htmlspecialcharsEx(trim($request->get('ENTITY')));
+        $reviewValid = htmlspecialcharsEx(trim($request->get('VALID')));
+
         $data = [
             'TEXT' => htmlspecialcharsEx(trim($reviewText)),
             'RATING' => htmlspecialcharsEx(trim($reviewRating)),
-            'ENTITY_TYPE' => $reviewEntityType,
-            'VALID' => $reviewValid == true ? 'Y' : 'N',
+            'ENTITY_TYPE' => htmlspecialcharsEx(trim($reviewEntityType)),
+            'VALID' => $reviewValid === 'on' ? 'Y' : 'N',
             'CREATED_AT' => new \Bitrix\Main\Type\DateTime(),
             'ENTITY' => htmlspecialcharsEx(trim($reviewEntity))
         ];
+
         $result = ReviewTable::add($data);
-        return $data;
+
+        return $result;
     }
 
     public function executeComponent()

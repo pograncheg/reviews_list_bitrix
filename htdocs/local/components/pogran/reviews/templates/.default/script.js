@@ -1,13 +1,15 @@
-function openEditForm(id, text, entityType, valid, entity) {
+function openEditForm(id, rating, text, entityType, valid, entity) {
   BX.SidePanel.Instance.open("pogran:reviews", {
     width: 470,
     title: "Изменить отзыв",
     events: {
       onLoad: function () {
+        editForm.querySelector('[name="ID"]').value = id;
         editForm.querySelector('[name="TEXT"]').value = text;
+        editForm.querySelector('[name="RATING"]').value = rating;
         editForm.querySelector('[name="ENTITY_TYPE"]').value = entityType;
         editForm.querySelector('[name="VALID"]').checked =
-          valid == 1 ? true : false;
+          valid == 'Y' ? true : false;
         editForm.querySelector('[name="ENTITY"]').value = entity;
       },
       onClose: function () {
@@ -24,6 +26,10 @@ function openEditForm(id, text, entityType, valid, entity) {
             return [
               new SaveButton({
                 onclick: () => {
+                  let errorFields = document.querySelectorAll(".error-field");
+                  errorFields.forEach(function (error) {
+                    error.remove();
+                  });
                   let editForm = document.getElementById("editForm");
                   let reviewText =
                     editForm.querySelector('[name="TEXT"]').value;
@@ -34,20 +40,13 @@ function openEditForm(id, text, entityType, valid, entity) {
                     editForm.querySelector('[name="VALID"]').checked;
                   let reviewEntity = 
                     editForm.querySelector('[name="ENTITY"]').value
-
+                  let formData = new FormData(editForm);
                   BX.ajax
                     .runComponentAction("pogran:reviews", "editReview", {
                       mode: "class",
-                      data: {
-                        reviewId: id,
-                        reviewText: reviewText,
-                        reviewEntityType: reviewEntityType,
-                        reviewValid: reviewValid,
-                        reviewEntity: reviewEntity
-                      },
+                      data: formData
                     })
                     .then(function (response) {
-                      console.log(response);
                       if (response.status === 'success') {
                         BX.SidePanel.Instance.close();
                         let grid = BX.Main.gridManager.getInstanceById("reviews_list");
@@ -56,7 +55,23 @@ function openEditForm(id, text, entityType, valid, entity) {
                         }
                       } else {
                       }
-                    });
+                    }, function(response) {
+                      errors = response.errors;
+                      errors.forEach(function (error) {
+                        fieldname = error.customData.field;
+                        errorMess = error.message;
+                        const newElement = document.createElement("p");
+                        newElement.innerHTML = errorMess;
+                        newElement.classList.add("error-field");
+                        const formField = document.querySelector(
+                          "[name=" + fieldname + "]"
+                        );
+                        formField.insertAdjacentElement(
+                          "afterend",
+                          newElement
+                        );
+                      });
+                  });
                 },
               }),
               cancelButton,
@@ -66,17 +81,23 @@ function openEditForm(id, text, entityType, valid, entity) {
             return    `<div>
                           <h3>Изменение отзыва</h3>
 						              <form method="POST" id="editForm">
-                            <div class=ui-ctl ui-ctl-textarea">Отзыв: 
-                                <textarea name="TEXT" class="ui-ctl-element ui-ctl-resize-y">${text}</textarea>
+                            <input type="text" hidden name="ID">
+                            Отзыв:
+                            <div class=ui-ctl ui-ctl-textarea"> 
+                              <textarea name="TEXT" class="ui-ctl-element ui-ctl-resize-y"></textarea>
+                            </div>
+                            Рейтинг:
+                            <div class="ui-ctl ui-ctl-textbox">
+	                            <input type="text" class="ui-ctl-element" name="RATING">
                             </div>
                             Тип связной сущности:
                             <div class="ui-ctl ui-ctl-after-icon ui-ctl-dropdown"> 
-                                <div class="ui-ctl-after ui-ctl-icon-angle"></div>
-                                <select name="ENTITY_TYPE" class="ui-ctl-element">
-                                    <option value="PRODUCT">Товар</option>
-                                    <option value="STORE">Магазин</option>
-                                    <option value="MANAGER">Менеджер</option>
-                                </select>
+                              <div class="ui-ctl-after ui-ctl-icon-angle"></div>
+                              <select name="ENTITY_TYPE" class="ui-ctl-element">
+                                <option value="PRODUCT">Товар</option>
+                                <option value="STORE">Магазин</option>
+                                <option value="MANAGER">Менеджер</option>
+                              </select>
                             </div>
                             ID связной сущности:
                             <div class="ui-ctl ui-ctl-textbox">
@@ -96,7 +117,6 @@ function openEditForm(id, text, entityType, valid, entity) {
 }
 
 function deleteReview(id) {
-  console.log(id);
   BX.ajax
   .runComponentAction("pogran:reviews", "deleteReview", {
     mode: "class",
@@ -105,7 +125,6 @@ function deleteReview(id) {
     },
   })
   .then(function (response) {
-    console.log(response);
     if (response.status === 'success') {
       alert('Отзыв удален');
       let grid = BX.Main.gridManager.getInstanceById("reviews_list");
@@ -136,7 +155,12 @@ function openCreateForm() {
           buttons({ cancelButton, SaveButton }) {
             return [
               new SaveButton({
+                type: 'submit',
                 onclick: () => {
+                  let errorFields = document.querySelectorAll(".error-field");
+                  errorFields.forEach(function (error) {
+                    error.remove();
+                  });
                   let editForm = document.getElementById("editForm");
                   let reviewText =
                     editForm.querySelector('[name="TEXT"]').value;
@@ -149,20 +173,13 @@ function openCreateForm() {
                     editForm.querySelector('[name="ENTITY"]').value
                   let reviewRating = 
                     editForm.querySelector('[name="RATING"]').value
-
+                  let formData = new FormData(editForm);
                   BX.ajax
                     .runComponentAction("pogran:reviews", "createReview", {
                       mode: "class",
-                      data: {
-                        reviewText: reviewText,
-                        reviewRating: reviewRating,
-                        reviewEntityType: reviewEntityType,
-                        reviewValid: reviewValid,
-                        reviewEntity: reviewEntity,
-                      },
+                      data: formData
                     })
                     .then(function (response) {
-                      console.log(response);
                       if (response.status === 'success') {
                         alert('Отзыв создан');
                         BX.SidePanel.Instance.close();
@@ -172,7 +189,23 @@ function openCreateForm() {
                         }
                       } else {
                       }
-                    });
+                    }, function(response) {
+                      errors = response.errors;
+                      errors.forEach(function (error) {
+                        fieldname = error.customData.field;
+                        errorMess = error.message;
+                        const newElement = document.createElement("p");
+                        newElement.innerHTML = errorMess;
+                        newElement.classList.add("error-field");
+                        const formField = document.querySelector(
+                          "[name=" + fieldname + "]"
+                        );
+                        formField.insertAdjacentElement(
+                          "afterend",
+                          newElement
+                        );
+                      });
+                  });
                 },
               }),
               cancelButton,
@@ -182,7 +215,8 @@ function openCreateForm() {
             return    `<div>
                           <h3>Создание отзыва</h3>
 						              <form method="POST" id="editForm">
-                            <div class=ui-ctl ui-ctl-textarea">Отзыв: 
+                            Отзыв:
+                            <div class=ui-ctl ui-ctl-textarea">
                                 <textarea name="TEXT" class="ui-ctl-element ui-ctl-resize-y"></textarea>
                             </div>
                             Рейтинг:

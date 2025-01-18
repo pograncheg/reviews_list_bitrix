@@ -23,3 +23,8 @@ Loader::registerNamespace(
    "Pogran",
    Loader::getDocumentRoot()."/local/php_interface/lib/"
 );
+
+Loader::registerNamespace(
+   "Pogran\Filters",
+   Loader::getDocumentRoot()."/local/php_interface/lib/filters/"
+);
