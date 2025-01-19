@@ -5,7 +5,7 @@ class ReviewTable extends Entity\DataManager
 {
 	public static function getTableName()
 	{
-		return 'mnd_reviews_new';
+		return 'mnd_reviews';
 	}
 		
 	public static function getMap()
@@ -15,10 +15,10 @@ class ReviewTable extends Entity\DataManager
                 'primary' => true,
                 'autocomplete' => true,
             ]),
-			new Entity\DateField('CREATED_AT', [
+			new Entity\DatetimeField('CREATED_AT', [
                 'default_value' => new \Bitrix\Main\Type\DateTime(),
             ]),
-			new Entity\DateField('UPDATED_AT'),
+			new Entity\DatetimeField('UPDATED_AT'),
 			new Entity\IntegerField('RATING'),
 			new Entity\StringField('TEXT', [
                 'required' => true,

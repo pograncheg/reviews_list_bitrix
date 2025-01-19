@@ -37,11 +37,12 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
 
         $arParams['UI_FILTER'] = [
             ['id' => 'CREATED_AT', 'name' => 'Дата создания', 'type' => 'date'],
+            ['id' => 'UPDATED_AT', 'name' => 'Дата изменения', 'type' => 'date'],
             [
                 'id' => 'ENTITY_TYPE',
                 'name' => 'Тип сущности',
                 'type' => 'list',
-                'items' => ['' => 'Любой', 'PRODUCT' => 'Товар', 'MANAGER' => 'Менеджер', 'STORE' => 'Магазин'],
+                'items' => ['PRODUCT' => 'Товар', 'MANAGER' => 'Менеджер', 'STORE' => 'Магазин'],
                 'params' => ['multiple' => 'Y']
             ],
             ['id' => 'VALID', 'name' => 'Модерация', 'type' => 'checkbox'],
@@ -103,37 +104,51 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
                 case 'ENTITY_TYPE':
                     $filter[$k] = $v;
                     break;
-                    // case 'VALID':
-                    //     $filter[$k] = $v;
-                    //     break;
-                    // case 'RATING':
-                    //     $filter[$k] = $v;
-                    //     break;
-                    // case 'CREATED_AT':
-                    //     $filter[$k] = $v;
-                    //     break;
-                    // case 'CREATED_AT_from':
-                    //     echo 
-                    //     $filter[">=CREATED_AT"] = $v;
-                    //     break;
-                    // case 'CREATED_AT_to':
-                    //     $filter["<=CREATED_AT"] = $v;
-                    //     break;
-                    // case 'CREATED_AT_to':
-                    //     $filter["<{$k}"] = $v;
-                    //     break;  
-                case 'RATING_from':
-                    $filter[">=RATING"] = $v;
-                    // echo ">RATING";
+                case 'VALID':
+                    $filter[$k] = $v;
                     break;
-                case 'RATING_to':
-                    $filter["<=RATING"] = $v;
-                    // echo ">RATING";
+                case 'CREATED_AT_from':
+                    // $filter["<=CREATED_AT"] = $v;
+                    if(!empty($v)) {
+                        $filter[">=CREATED_AT"] = new \Bitrix\Main\Type\DateTime($v);
+                    }
+                    break;
+                case 'CREATED_AT_to':
+                    if(!empty($v)) {
+                        $filter["<=CREATED_AT"] = new \Bitrix\Main\Type\DateTime($v);
+                    }
+                    break;
+                case 'UPDATED_AT_from':
+                    if(!empty($v)) {
+                        $filter[">=UPDATED_AT"] = new \Bitrix\Main\Type\DateTime($v);
+                    }
+                    break;
+                case 'UPDATED_AT_to':
+                    if(!empty($v)) {
+                        $filter["<=UPDATED_AT"] = new \Bitrix\Main\Type\DateTime($v);
+                    }
+                    break;
+                case 'RATING_from':
+                    if (!empty($v)) {                        
+                        if(!empty($filterData['RATING_to'])) {
+                            $filter[">=RATING"] = $v;
+                            $filter["<=RATING"] = $filterData['RATING_to'];
+                        } else {
+                            $filter[">RATING"] = $v;
+                        }                        
+                    } else {
+                        if (!empty($filterData['RATING_to'])) {
+                            $filter["<RATING"] = $filterData['RATING_to'];
+                        }
+                    }
                     break;
             }
             // echo $k . ' - ' . $v . '<br>';
             $filter['TEXT'] = "%" . $filterData['FIND'] . "%";
         }
+        // echo '<pre>';
+        // print_r($filter);
+        // echo '</pre>';
 
         $result = ReviewTable::getList(array(
             'order' => $sort['sort'],
@@ -143,10 +158,10 @@ class ReviewsComponent extends CBitrixComponent implements Controllerable, Error
             'limit'       => $nav->getLimit(),
             'count_total' => true,
         ));
+
         $nav->setRecordCount($result->getCount());
 
         while ($row = $result->fetch()) {
-
             $list[] = [
                 'data' => $row,
                 'actions' => [
